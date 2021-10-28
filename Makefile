@@ -9,7 +9,7 @@ LINK_FLAGS = libgurobi_c++.a -L/home/ghq/gurobi912/linux64/lib -lgurobi91_light
 
 
 SRC = ./src
-INC = ./inc
+INC = ./include
 OBJ = ./obj
 
 SOURCE = $(wildcard ${SRC}/*.cc)
