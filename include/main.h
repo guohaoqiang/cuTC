@@ -16,5 +16,6 @@
 
 //#include "OptionParser.h"
 #include <gflags/gflags.h> 
-#include "tensors.h"
+#include <glog/logging.h> 
+#include "../include/io.h"
 #endif /* _MAIN_H_ */
