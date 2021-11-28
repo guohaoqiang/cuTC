@@ -2,9 +2,39 @@
 
 Config::Config(const std::string bench_name):conFil(bench_name.substr(bench_name.find_last_of("/")+1,-1)){
     parseTensor(conFil);
+    set_a();
+    set_b();
 }
 std::unordered_map<char,int64_t>& Config::get_Extents(){
     return extents;
+}    
+void Config::set_a(){
+    for (auto md:mode_a){
+        ext_a.push_back(extents[md]);
+    }
+}
+void Config::set_b(){
+    for (auto md:mode_b){
+        ext_b.push_back(extents[md]);
+    }
+}
+vector<int>& Config::get_Mode_a(){
+    return mode_a;
+}    
+vector<int>& Config::get_Mode_b(){
+    return mode_b;
+}    
+vector<int>& Config::get_Mode_c(){
+    return mode_c;
+}    
+vector<int>& Config::get_Ext_a(){
+    return ext_a;
+}    
+vector<int>& Config::get_Ext_b(){
+    return ext_b;
+}    
+vector<int>& Config::get_Ext_c(){
+    return ext_c;
 }    
 void Config::parseTensor(const std::string& s){
     std::cout<<"s:"<<s<<std::endl;
@@ -26,12 +56,12 @@ void Config::parseTensor(const std::string& s){
         std::string word;
         while (std::getline(a_s,word,',')){
             char ch = word[0];
-            //std::cout<<"ch = "<<ch<<std::endl;
             if (ch>='a' && ch<='z'){
                 dim = ch;
                 continue;
             }
             extents[dim] = std::stoi(word); 
+            ext_c.push_back(std::stoi(word));
             mode_c.push_back(dim);
         }
         std::stringstream contract_s(abc.substr(contraction_start+1,contraction_end-contraction_start-1));
@@ -59,15 +89,15 @@ void Config::parseTensor(const std::string& s){
 void Config::print(){
     std::cout<<"a:"<<std::endl;
     for (auto m:mode_a){
-        std::cout<<m<<":"<<extents[m]<<std::endl;
+        std::cout<<(char)m<<":"<<extents[m]<<std::endl;
     }
     std::cout<<"b:"<<std::endl;
     for (auto m:mode_b){
-        std::cout<<m<<":"<<extents[m]<<std::endl;
+        std::cout<<(char)m<<":"<<extents[m]<<std::endl;
     }
     std::cout<<"c:"<<std::endl;
     for (auto m:mode_c){
-        std::cout<<m<<":"<<extents[m]<<std::endl;
+        std::cout<<(char)m<<":"<<extents[m]<<std::endl;
     }
     std::cout<<"contraction:"<<std::endl;
     for (auto m:mode_ct){

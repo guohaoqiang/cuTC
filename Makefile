@@ -6,6 +6,8 @@ CXX = g++
 WARN_FLAGS = -O3 -g -Wall -Wextra -Wabi -Wctor-dtor-privacy -Wnon-virtual-dtor -Wreorder -Wstrict-null-sentinel -Woverloaded-virtual -Wshadow -Wcast-align -Wpointer-arith -Wwrite-strings -Wundef -Wredundant-decls -lglog -lgflags -lpthread# -Werror # -Weffc++
 endif
 NVXX = nvcc
+NVXXFLAGS = -std=c++11 -lcutensor
+NVXX_LINK_FLAGS = -L${CUTENSOR_ROOT}/lib/10.1/ -I${CUTENSOR_ROOT}/include
 #CXXFLAGS = -std=c++11 -O2 -lglogs -lgflags
 #LINK_FLAGS = libgurobi_c++.a -L/home/ghq/gurobi912/linux64/lib -lgurobi91_light
 
@@ -20,15 +22,20 @@ CC_OBJECTS = $(patsubst %.cc,$(OBJ)/%.cc.o,$(notdir ${CC_SOURCE}))
 kernel_OBJECTS = $(patsubst %.cu,$(OBJ)/%.cu.o,$(notdir ${kernel_SOURCE}))
 #OBJECTS = main.o graphdata.o OptionParser.o acc.o pec.o analysis.o 
 
+#BIN1 = tc
+#BIN2 = cutensor
+all:tc cutensor
 
-BIN = tc
-$(BIN): $(CC_OBJECTS) $(kernel_OBJECTS)
+tc: $(CC_OBJECTS) $(kernel_OBJECTS)
 	$(CXX) -o $@ $^ $(WARN_FLAGS)
+
+cutensor: $(SRC)/cutensor/cutensor.cu
+	$(NVXX) -o $@ $^ $(NVXXFLAGS) $(NVXX_LINK_FLAGS)
 
 $(OBJ)/%.cc.o: $(SRC)/%.cc $(INC)/%.h
 	$(CXX) -c $< -o $@ $(WARN_FLAGS) $(CXXFLAGS)
 
-$(OBJ)/%.cu.o: $(SRC)/%.cu $(INC)/%.h
+$(OBJ)/%.cu.o: $(SRC)/kernels/%.cu $(INC)/%.h
 	$(NVXX) -c $< -o $@
 
 

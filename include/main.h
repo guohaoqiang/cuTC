@@ -11,11 +11,11 @@
 #include<string>
 #include<map>
 #include<memory>
-
-
-
-//#include "OptionParser.h"
 #include <gflags/gflags.h> 
 #include <glog/logging.h> 
 #include "../include/io.h"
+#include "../include/tensor.h"
+
+
+void run_cuTensor(Tensor& A, Tensor& B, Tensor& C);
 #endif /* _MAIN_H_ */
