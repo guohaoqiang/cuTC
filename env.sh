@@ -1,0 +1,2 @@
+export CUTENSOR_ROOT=${PWD}/libcutensor
+export LD_LIBRARY_PATH=${CUTENSOR_ROOT}/lib/10.1/:${LD_LIBRARY_PATH}

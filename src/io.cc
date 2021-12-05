@@ -5,7 +5,7 @@ Config::Config(const std::string bench_name):conFil(bench_name.substr(bench_name
     set_a();
     set_b();
 }
-std::unordered_map<char,int64_t>& Config::get_Extents(){
+std::unordered_map<int,int64_t>& Config::get_Extents(){
     return extents;
 }    
 void Config::set_a(){
@@ -18,22 +18,22 @@ void Config::set_b(){
         ext_b.push_back(extents[md]);
     }
 }
-vector<int>& Config::get_Mode_a(){
+std::vector<int>& Config::get_Mode_a(){
     return mode_a;
 }    
-vector<int>& Config::get_Mode_b(){
+std::vector<int>& Config::get_Mode_b(){
     return mode_b;
 }    
-vector<int>& Config::get_Mode_c(){
+std::vector<int>& Config::get_Mode_c(){
     return mode_c;
 }    
-vector<int>& Config::get_Ext_a(){
+std::vector<int>& Config::get_Ext_a(){
     return ext_a;
 }    
-vector<int>& Config::get_Ext_b(){
+std::vector<int>& Config::get_Ext_b(){
     return ext_b;
 }    
-vector<int>& Config::get_Ext_c(){
+std::vector<int>& Config::get_Ext_c(){
     return ext_c;
 }    
 void Config::parseTensor(const std::string& s){

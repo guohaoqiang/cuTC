@@ -11,11 +11,12 @@
 #include<string>
 #include<map>
 #include<memory>
-#include <gflags/gflags.h> 
-#include <glog/logging.h> 
-#include "../include/io.h"
-#include "../include/tensor.h"
+#include<gflags/gflags.h> 
+#include<glog/logging.h> 
+#include "io.h"
+#include "tensor.h"
+#include "mycutensor.cuh"
 
 
-void run_cuTensor(Tensor& A, Tensor& B, Tensor& C);
+//void run_cuTensor(Tensor& A, Tensor& B, Tensor& C);
 #endif /* _MAIN_H_ */

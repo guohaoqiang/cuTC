@@ -1,6 +1,6 @@
 #include "../include/tensor.h"
 
-Tensor::Tensor(vector<int>& mod, unordered_map<int,int64_t>& exts, bool initiallize){
+Tensor::Tensor(std::vector<int>& mod, std::unordered_map<int,int64_t>& exts, bool initiallize){
     this->mode = mod;
     for (auto &it:this->mode){
         extents.push_back(exts[it]);
@@ -11,7 +11,7 @@ Tensor::Tensor(vector<int>& mod, unordered_map<int,int64_t>& exts, bool initiall
         genTensor();
 }
 
-Tensor::Tensor(vector<int>& mod, unordered_map<int,int64_t>& exts){
+Tensor::Tensor(std::vector<int>& mod, std::unordered_map<int,int64_t>& exts){
     this->mode = mod;
     for (auto &it:this->mode){
         extents.push_back(exts[it]);
@@ -22,18 +22,18 @@ Tensor::Tensor(vector<int>& mod, unordered_map<int,int64_t>& exts){
 }
 void Tensor::iniTensor(){
     for (size_t i = 0; i < sz; i++){
-        data[i] = (float)0.0;
+        data[i] = (TENSOR_TYPE)0.0;
     }
 }
 void Tensor::genTensor(){
     for (size_t i = 0; i < sz; i++){
-        data[i] = (((float) rand())/RAND_MAX - 0.5)*100;
+        data[i] = (((TENSOR_TYPE) rand())/RAND_MAX - 0.5)*100;
     }
 }
 
-vector<int>& Tensor::get_Mode(){
+std::vector<int> Tensor::get_Mode(){
     return this->mode;
 }    
-vector<int>& Tensor::get_Ext(){
+std::vector<int64_t> Tensor::get_Ext(){
     return this->extents;
 }    

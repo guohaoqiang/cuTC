@@ -27,18 +27,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */  
 
-#include "../../include/mycutensor.h"
-#define HANDLE_ERROR(x)                                               \
-{ const auto err = x;                                                 \
-  if( err != CUTENSOR_STATUS_SUCCESS )                                \
-  { printf("Error: %s\n", cutensorGetErrorString(err)); return err; } \
-};
-
-#define HANDLE_CUDA_ERROR(x)                                      \
-{ const auto err = x;                                             \
-  if( err != cudaSuccess )                                        \
-  { printf("Error: %s\n", cudaGetErrorString(err)); return err; } \
-};
+#include <cuda_runtime.h>
+#include <cutensor.h>
+#include "../../include/mycutensor.cuh"
 
 struct GPUTimer
 {
@@ -72,7 +63,7 @@ struct GPUTimer
     cudaEvent_t start_, stop_;
 };
 
-int main()
+void run_cuTensor(Tensor &AA, Tensor &BB, Tensor &CC)
 {
     typedef float floatTypeA;
     typedef float floatTypeB;
@@ -91,46 +82,78 @@ int main()
      * Computing: C_{m,u,n,v} = alpha * A_{m,h,k,n} B_{u,k,v,h} + beta * C_{m,u,n,v}
      **********************/
 
-    std::vector<int> modeC{'m','u','n','v'};
-    std::vector<int> modeA{'m','h','k','n'};
-    std::vector<int> modeB{'u','k','v','h'};
+    //std::vector<int> modeC{'m','u','n','v'};
+    //std::vector<int> modeA{'m','h','k','n'};
+    //std::vector<int> modeB{'u','k','v','h'};
+    std::vector<int> modeC(CC.get_Mode());
+    std::vector<int> modeA(AA.get_Mode());
+    std::vector<int> modeB(BB.get_Mode());
     int nmodeA = modeA.size();
     int nmodeB = modeB.size();
     int nmodeC = modeC.size();
 
     std::unordered_map<int, int64_t> extent;
-    extent['m'] = 96;
-    extent['n'] = 96;
-    extent['u'] = 96;
-    extent['v'] = 64;
-    extent['h'] = 64;
-    extent['k'] = 64;
+    //extent['m'] = 96;
+    //extent['n'] = 96;
+    //extent['u'] = 96;
+    //extent['v'] = 64;
+    //extent['h'] = 64;
+    //extent['k'] = 64;
 
-    double gflops = (2.0 * extent['m'] * extent['n'] * extent['u'] * extent['v'] * extent['k'] * extent['h']) /1e9;
 
-    std::vector<int64_t> extentC;
-    for (auto mode : modeC)
-        extentC.push_back(extent[mode]);
-    std::vector<int64_t> extentA;
-    for (auto mode : modeA)
-        extentA.push_back(extent[mode]);
-    std::vector<int64_t> extentB;
-    for (auto mode : modeB)
-        extentB.push_back(extent[mode]);
 
+    std::vector<int64_t> extentC(CC.get_Ext());
+    //for (auto mode : modeC)
+    //    extentC.push_back(extent[mode]);
+    std::vector<int64_t> extentA(AA.get_Ext());
+    //for (auto mode : modeA)
+    //    extentA.push_back(extent[mode]);
+    std::vector<int64_t> extentB(BB.get_Ext());
+    //for (auto mode : modeB)
+    //    extentB.push_back(extent[mode]);
+
+    for (int i=0; i<modeC.size(); ++i){
+        if (!extent.count(modeC[i])){
+            extent[modeC[i]] = extentC[i]; 
+        }else if(extent[modeC[i]]!=extentC[i]){
+            std::cout<<"C extent error!"<<std::endl;
+            exit(1);
+        }
+    }
+    for (int i=0; i<modeA.size(); ++i){
+        if (!extent.count(modeA[i])){
+            extent[modeA[i]] = extentA[i]; 
+        }else if(extent[modeA[i]]!=extentA[i]){
+            std::cout<<"A extent error!"<<std::endl;
+            exit(1);
+        }
+    }
+    for (int i=0; i<modeB.size(); ++i){
+        if (!extent.count(modeB[i])){
+            extent[modeB[i]] = extentB[i]; 
+        }else if(extent[modeB[i]]!=extentB[i]){
+            std::cout<<"B extent error!"<<std::endl;
+            exit(1);
+        }
+    }
+    double gflop = 1.0;
+    for (auto num:extent){
+        gflop *= num.second;
+    }
+    double gflops = (2.0 * gflop) /1e9;
     /**********************
      * Allocating data
      **********************/
 
     size_t elementsA = 1;
-    for (auto mode : modeA)
-        elementsA *= extent[mode];
+    for (auto num : extentA)
+        elementsA *= num;
     size_t elementsB = 1;
-    for (auto mode : modeB)
-        elementsB *= extent[mode];
+    for (auto num : extentB)
+        elementsB *= num;
     size_t elementsC = 1;
-    for (auto mode : modeC)
-        elementsC *= extent[mode];
+    for (auto num : extentC)
+        elementsC *= num;
 
     size_t sizeA = sizeof(floatTypeA) * elementsA;
     size_t sizeB = sizeof(floatTypeB) * elementsB;
@@ -146,22 +169,22 @@ int main()
     floatTypeB *B = (floatTypeB*) malloc(sizeof(floatTypeB) * elementsB);
     floatTypeC *C = (floatTypeC*) malloc(sizeof(floatTypeC) * elementsC);
 
-    if (A == NULL || B == NULL || C == NULL)
-    {
-        printf("Error: Host allocation of A or C.\n");
-        return -1;
-    }
+    //if (A == NULL || B == NULL || C == NULL)
+    //{
+    //    printf("Error: Host allocation of A or C.\n");
+    //    return -1;
+    //}
 
     /*******************
      * Initialize data
      *******************/
 
     for (int64_t i = 0; i < elementsA; i++)
-        A[i] = (((float) rand())/RAND_MAX - 0.5)*100;
+        A[i] = AA.data[i];
     for (int64_t i = 0; i < elementsB; i++)
-        B[i] = (((float) rand())/RAND_MAX - 0.5)*100;
+        B[i] = BB.data[i];
     for (int64_t i = 0; i < elementsC; i++)
-        C[i] = (((float) rand())/RAND_MAX - 0.5)*100;
+        C[i] = CC.data[i];
 
     HANDLE_CUDA_ERROR(cudaMemcpy(A_d, A, sizeA, cudaMemcpyHostToDevice));
     HANDLE_CUDA_ERROR(cudaMemcpy(B_d, B, sizeB, cudaMemcpyHostToDevice));
@@ -323,5 +346,5 @@ int main()
     if (C_d) cudaFree(C_d);
     if (work) cudaFree(work);
 
-    return 0;
+    return ;
 }
