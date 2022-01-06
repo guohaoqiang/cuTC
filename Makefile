@@ -1,6 +1,6 @@
 
 # CUDA directory:
-CUDA_ROOT_DIR=/usr/local/cuda-10.2
+CUDA_ROOT_DIR=/usr/local/cuda-102
 # CUDA library directory:
 CUDA_LIB_DIR= -L$(CUDA_ROOT_DIR)/lib64
 # CUDA include directory:
@@ -45,10 +45,13 @@ test:
 
 #BIN1 = tc
 #BIN2 = cutensor
-all:tc mycutensor
+all:cutc mycutensor
 
 #tc: $(CC_OBJECTS) $(kernel_cutc_OBJECTS)
 #	$(CXX) -o $@ $^ $(WARN_FLAGS)
+
+cutc: $(CC_OBJECTS) $(kernel_cutc_OBJECTS)
+	$(CXX) -o $@ $^ $(CUDA_INC_DIR) $(CUDA_LIB_DIR) $(CUDA_LINK_LIBS) $(NVXX_LINK_FLAGS) $(NVXXFLAGS) $(WARN_FLAGS) 
 
 cutensor: $(CC_OBJECTS) $(kernel_base_OBJECTS)
 	$(CXX) -o $@ $^ $(CUDA_INC_DIR) $(CUDA_LIB_DIR) $(CUDA_LINK_LIBS) $(NVXX_LINK_FLAGS) $(NVXXFLAGS) $(WARN_FLAGS) 
@@ -62,7 +65,8 @@ $(OBJ)/%.cu.o: $(BASE_SRC)/%.cu $(INC)/%.cuh
 	$(NVXX) -c $< -o $@ $(NVXXFLAGS) $(NVXX_LINK_FLAGS)
 
 $(OBJ)/%.cu.o: $(CUTC_SRC)/%.cu $(INC)/%.cuh
-	$(NVXX) -c $< -o $@
+	$(NVXX) -c -g $< -o $@ $(NVXXFLAGS) $(NVXX_LINK_FLAGS)
+
 
 .PHONY: clean
 

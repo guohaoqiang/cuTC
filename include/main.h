@@ -16,6 +16,7 @@
 #include "io.h"
 #include "tensor.h"
 #include "mycutensor.cuh"
+#include "cutc.cuh"
 
 
 //void run_cuTensor(Tensor& A, Tensor& B, Tensor& C);

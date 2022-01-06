@@ -15,8 +15,8 @@ int main(int argc, char *argv[])
     Tensor B(cfg->get_Mode_b(),cfg->get_Extents(),true);  
     Tensor C(cfg->get_Mode_c(),cfg->get_Extents());  
   
-    run_cuTensor(A,B,C);
-    //run_cuTC(A,B,C);
+    //run_cuTensor(A,B,C);
+    run_cuTC(A,B,C);
 
     return 0;
 

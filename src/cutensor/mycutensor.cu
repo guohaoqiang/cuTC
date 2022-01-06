@@ -29,7 +29,9 @@
 
 #include <cuda_runtime.h>
 #include <cutensor.h>
+//#include "cudnn.h"
 #include "../../include/mycutensor.cuh"
+#include "../../include/util.cuh"
 
 struct GPUTimer
 {
