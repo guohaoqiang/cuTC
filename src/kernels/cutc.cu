@@ -248,7 +248,7 @@ void tc_1dim_64_8X8(float* A, int* dim_A, int* inter_A, int* acc_dims_A, int nd_
     // A: {dim[dim_A[0]], dim[dim_A[1]], dim[dim_A[2]], ...}
     // B: {dim[dim_B[0]], dim[dim_B[1]], dim[dim_B[2]], ...}
     // C: {dim[dim_C[0]], dim[dim_C[1]], dim[dim_C[2]], ...}
-    int BY = 16, BX = 24, BK = 12;
+    int BY = 4, BX = 4, BK = 8;
     extern __shared__ float sh[]; 
     // shared_mem: BY*BK + BX*BK | BY*BK + BX*BK
     float *sh_A = sh;
@@ -272,6 +272,7 @@ void tc_1dim_64_8X8(float* A, int* dim_A, int* inter_A, int* acc_dims_A, int nd_
     int coeff_y = blockIdx.y % blocks_y * BY + threadIdx.x % BY; 
     // BX <= dim[dim_C_B[0]]
     int coeff_x = (blockIdx.x % blocks_x * BX + threadIdx.x / BY);
+    
     float reg_C; 
     int C_offset = 0;
     int idx1 , idx2; 
@@ -294,7 +295,7 @@ void tc_1dim_64_8X8(float* A, int* dim_A, int* inter_A, int* acc_dims_A, int nd_
         //C_start = C;
         reg_C = C[C_offset]; 
     }    
-    /*
+    
     // A (a e b f)
     //load A from global memory to shared memory
     //                   + a                                               + b * a_dims * e_dims                     + (e) 0 * a_dims  + (f) 0 * a_dims * e_dims * b_dims
@@ -330,7 +331,7 @@ void tc_1dim_64_8X8(float* A, int* dim_A, int* inter_A, int* acc_dims_A, int nd_
     }
     A_internal_offset += A_base;
     if ( threadIdx.x < BY*BK ){
-        //*(sh_A + threadIdx.x) = A[A_internal_offset];
+        *(sh_A + threadIdx.x) = A[A_internal_offset];
     }
    
     // B (f c e d)
@@ -436,7 +437,7 @@ void tc_1dim_64_8X8(float* A, int* dim_A, int* inter_A, int* acc_dims_A, int nd_
             }
         }
     }
-   */ 
+    
     // write C tile from register to global memory
     if ( coeff_y < dim[dim_C_A[0]] && coeff_x < dim[dim_C_B[0]] ){
         C[C_offset] = reg_C;
@@ -610,14 +611,14 @@ void tensorContraction_host(float A[], int dim_A[], int nd_A, \
     }
     
     dim3 grid_size(0,0,1);
-    int BX = 24;
+    int BX = 4;
     int blocks_x = (dim[dim_C_B_host[0]] + BX - 1) / BX;
     int prod = 1;
     for (int i=1; i<nd_C_B; ++i){
         prod *= dim[dim_C_B_host[i]];
     }
     grid_size.x = prod * blocks_x;
-    int BY = 16;
+    int BY = 4;
     int blocks_y = (dim[dim_C_A_host[0]] + BY - 1) / BY;
     prod = 1;
     for (int i=1; i<nd_C_A; ++i){
@@ -625,7 +626,7 @@ void tensorContraction_host(float A[], int dim_A[], int nd_A, \
     }
     grid_size.y = prod * blocks_y;
 
-    int BK = 12;
+    int BK = 8;
     dim3 block_size(BX*BY,1,1);
     int shared_mem_size = sizeof(float)*2*(BX*BK+BY*BK);
     
@@ -750,7 +751,9 @@ void tensorContraction_host(float A[], int dim_A[], int nd_A, \
     ErrChk(cudaMemcpy(dim_device, dim, nd*sizeof(int64_t), cudaMemcpyHostToDevice));
 
     printf("nd = %d\n",nd);
-    
+   
+    printf("grid_size: (%d,%d,%d)\n",grid_size.x,grid_size.y,grid_size.z); 
+    printf("block_size: (%d,%d,%d)\n",block_size.x,block_size.y,block_size.z); 
     for (int i=0; i<20; ++i)
         printf("%f  ",C[i]);
     printf("\n");
