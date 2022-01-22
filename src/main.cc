@@ -13,7 +13,7 @@ int main(int argc, char *argv[])
   
     Tensor A(cfg->get_Mode_a(),cfg->get_Extents(),true);  
     Tensor B(cfg->get_Mode_b(),cfg->get_Extents(),true);  
-    Tensor C(cfg->get_Mode_c(),cfg->get_Extents());  
+    Tensor C(cfg->get_Mode_c(),cfg->get_Extents(),true);  
   
     //run_cuTensor(A,B,C);
     run_cuTC(A,B,C);

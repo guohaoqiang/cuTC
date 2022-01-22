@@ -65,7 +65,7 @@ $(OBJ)/%.cu.o: $(BASE_SRC)/%.cu $(INC)/%.cuh
 	$(NVXX) -c $< -o $@ $(NVXXFLAGS) $(NVXX_LINK_FLAGS)
 
 $(OBJ)/%.cu.o: $(CUTC_SRC)/%.cu $(INC)/%.cuh
-	$(NVXX) -c -g $< -o $@ $(NVXXFLAGS) $(NVXX_LINK_FLAGS)
+	$(NVXX) -c -G -g $< -o $@ $(NVXXFLAGS) $(NVXX_LINK_FLAGS)
 
 
 .PHONY: clean

@@ -27,7 +27,8 @@ void Tensor::iniTensor(){
 }
 void Tensor::genTensor(){
     for (size_t i = 0; i < sz; i++){
-        data[i] = (((TENSOR_TYPE) rand())/RAND_MAX - 0.5)*100;
+        //data[i] = (((TENSOR_TYPE) rand())/RAND_MAX - 0.5)*100;
+        data[i] = 1.0;
     }
 }
 
